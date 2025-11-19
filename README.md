@@ -1,135 +1,65 @@
-# Employee Management System - Original Working Version
+# Employee Management System (Unified Local Version)
 
-## 🚀 Quick Start (Original Local Setup)
+Single Flask application that serves the login, dashboards, analytics, and AI assistant from one codebase. Follow these steps on any machine to run it exactly as in the repository.
 
-This system has 3 components that work together:
+## Prerequisites
 
-### 1️⃣ **Frontend (Next.js)** - Main UI
+- Python 3.10+ (3.13 tested)
+- Git
+- (Optional) `virtualenv`
+
+## 1. Clone the repository
+
 ```bash
-cd employee-mgmt-system-main/frontend
-npm install
-npm run dev
+git clone https://github.com/ALOK-Yeager/employee-mgmt-system-main.git
+cd employee-mgmt-system-main
 ```
-**Access:** http://localhost:3000
 
-### 2️⃣ **Backend (Flask API)** - Employee Management API
+## 2. Create a virtual environment (recommended)
+
 ```bash
-cd employee-mgmt-system-main/backend
+python -m venv .venv
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate    # macOS / Linux
+```
+
+## 3. Install backend requirements
+
+```bash
 pip install -r requirements.txt
-python app.py
 ```
-**Access:** http://localhost:5000
 
-### 3️⃣ **Chatbot Service (Optional)** - AI Chatbot
+## 4. Configure environment variables
+
 ```bash
-cd employee-mgmt-system-main/backend
-python chatbot_service.py
+copy .env.example .env          # Windows
+# cp .env.example .env          # macOS / Linux
 ```
-**Access:** http://localhost:5001
 
-### 4️⃣ **WhatsApp Bot (Optional)** - WhatsApp Integration
+The default values let the app run with mock data. Update the keys in `.env` later if you want live integrations (MongoDB, Groq, Cloudinary, etc.).
+
+## 5. Start the unified application
+
 ```bash
-cd employee-mgmt-system-main
-pip install -r whatsapp_requirements.txt
-python twilio_whatsapp.py
-```
-**Access:** http://localhost:8000
-**Webhook:** http://localhost:8000/whatsapp
-
----
-
-## 🎯 **What Each Component Does**
-
-| Component | Port | Purpose |
-|-----------|------|---------|
-| **Frontend (Next.js)** | 3000 | Full UI with login, dashboard, chatbot widget |
-| **Backend API** | 5000 | Employee management, authentication, transfers |
-| **Chatbot Service** | 5001 | AI-powered chatbot responses |
-| **WhatsApp Bot** | 8000 | WhatsApp integration via Twilio |
-
----
-
-## ✅ **Start Everything**
-
-### **Windows:**
-```bash
-# Terminal 1 - Frontend
-cd employee-mgmt-system-main\frontend
-npm run dev
-
-# Terminal 2 - Backend
-cd employee-mgmt-system-main\backend
-python app.py
-
-# Terminal 3 - Chatbot (Optional)
-cd employee-mgmt-system-main\backend
-python chatbot_service.py
-
-# Terminal 4 - WhatsApp Bot (Optional)
-cd employee-mgmt-system-main
-python twilio_whatsapp.py
+python unified_app.py
 ```
 
-### **Mac/Linux:**
-```bash
-# Terminal 1 - Frontend
-cd employee-mgmt-system-main/frontend
-npm run dev
+By default the app listens on `http://localhost:5000`.
 
-# Terminal 2 - Backend
-cd employee-mgmt-system-main/backend
-python app.py
+## 6. Log in with demo accounts
 
-# Terminal 3 - Chatbot (Optional)
-cd employee-mgmt-system-main/backend
-python chatbot_service.py
+| Role | Username | Password |
+|------|----------|----------|
+| CEO / Admin | `admin` | `admin123` |
+| Zone Education Officer | `zeo1` | `zeo123` |
+| School Admin | `school1` | `school123` |
+| Staff | `staff1` | `staff123` |
 
-# Terminal 4 - WhatsApp Bot (Optional)
-cd employee-mgmt-system-main
-python twilio_whatsapp.py
-```
+Successful login redirects to the unified dashboard where you can access analytics, employee records, transfers, login logs, and the AI assistant widget.
 
----
+## Optional tooling
 
-## 🔐 **Login Credentials**
+- `scripts/setup-env.js`: generates `.env` interactively (Node.js required).
+- `ALTERNATIVE_TUNNELING.md`: instructions for exposing localhost via Cloudflare Tunnel/Ngrok for demos.
 
-**Admin Account:**
-- Username: `admin`
-- Password: `admin123`
-
-**Employee Accounts:**
-- Username: `john.doe` | Password: `password123`
-- Username: `jane.smith` | Password: `password456`
-
----
-
-## 📱 **WhatsApp Integration**
-
-See [WHATSAPP_SETUP_GUIDE.md](WHATSAPP_SETUP_GUIDE.md) for complete setup instructions.
-
-**Quick Setup:**
-1. Deploy the WhatsApp bot to a hosting provider
-2. Configure Twilio webhook with your deployed URL
-3. Connect teacher's phone to Twilio sandbox
-4. Start chatting with the bot
-
----
-
-## 🚀 **Deployment**
-
-See [DEPLOYMENT.md](DEPLOYMENT.md) for production deployment instructions.
-
-**Quick Deploy Options:**
-- Render.com (recommended)
-- Railway.app
-- Heroku
-- DigitalOcean
-
----
-
-## 📞 **Support**
-
-For issues or questions:
-- Check troubleshooting guides in documentation
-- Review logs in your IDE or hosting dashboard
-- Consult DEPLOYMENT.md for deployment issues
+That’s it—clone, install, copy `.env`, run `unified_app.py`, and share the provided demo credentials.
