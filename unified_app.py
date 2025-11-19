@@ -62,6 +62,84 @@ app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'your-secret-key-change-in-pr
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
+# Role metadata used to drive the landing and login pages
+DEFAULT_ROLE_KEY = 'ceo'
+ROLE_METADATA = {
+    'ceo': {
+        'label': 'CEO / Executive Admin',
+        'headline': 'Executive Leadership Access',
+        'description': 'Monitor organization-wide performance and security signals.',
+        'highlights': [
+            'View company-wide KPIs and health metrics',
+            'Approve transfers, leaves, and staffing changes',
+            'Audit security events and login patterns'
+        ],
+        'demo_accounts': [
+            {
+                'username': 'admin',
+                'password': 'admin123',
+                'note': 'Full system access including analytics overview'
+            }
+        ]
+    },
+    'admin': {
+        'label': 'School Administrator',
+        'headline': 'School Administration Portal',
+        'description': 'Manage school-level staff, attendance, and records.',
+        'highlights': [
+            'Onboard or update staff records with ease',
+            'Track attendance and leave balances',
+            'Generate compliance-ready reports instantly'
+        ],
+        'demo_accounts': [
+            {
+                'username': 'school1',
+                'password': 'school123',
+                'note': 'Scoped to school operations and reporting'
+            }
+        ]
+    },
+    'zeo': {
+        'label': 'Zonal Education Officer',
+        'headline': 'ZEO Oversight Workspace',
+        'description': 'Coordinate zonal staffing, transfers, and approvals.',
+        'highlights': [
+            'Review inter-school transfer queues quickly',
+            'Monitor staffing coverage across the zone',
+            'Validate escalation requests from schools'
+        ],
+        'demo_accounts': [
+            {
+                'username': 'zeo1',
+                'password': 'zeo123',
+                'note': 'Regional oversight with approval privileges'
+            }
+        ]
+    },
+    'staff': {
+        'label': 'Teaching Staff',
+        'headline': 'Staff Self-Service Center',
+        'description': 'Access personal records, leave balances, and AI assistant.',
+        'highlights': [
+            'Check schedules, leave balance, and announcements',
+            'Chat with the AI assistant for quick help',
+            'Update personal and contact information securely'
+        ],
+        'demo_accounts': [
+            {
+                'username': 'john.doe',
+                'password': 'password123',
+                'note': 'Demo teacher profile with dashboard access'
+            },
+            {
+                'username': 'staff1',
+                'password': 'staff123',
+                'note': 'Alternate staff login for testing'
+            }
+        ]
+    }
+}
+
 # MongoDB connection
 MONGO_URI = os.getenv('MONGO_URI', 'mongodb://localhost:27017/employee_mgmt')
 try:
@@ -474,6 +552,110 @@ def chatbot_reset():
     return jsonify({'status': 'success', 'message': 'Conversation reset'})
 
 # ==================== FRONTEND ROUTES ====================
+
+def _send_template_fallback(filename: str):
+    """Serve a template directly from disk if Jinja cannot render it."""
+    fallback_path = os.path.join(base_dir, filename)
+    if os.path.exists(fallback_path):
+        return send_from_directory(base_dir, filename)
+    return jsonify({'error': f'{filename} not found'}), 404
+
+
+def _resolve_role(role_key: str):
+    """Return a normalized role key and its metadata, defaulting gracefully."""
+    normalized = (role_key or '').lower()
+    if normalized in ROLE_METADATA:
+        return normalized, ROLE_METADATA[normalized]
+    return DEFAULT_ROLE_KEY, ROLE_METADATA[DEFAULT_ROLE_KEY]
+
+
+def _render_login(role_key: str):
+    """Render the login template with role metadata context."""
+    selected_key, role_info = _resolve_role(role_key)
+    context = {
+        'roles': ROLE_METADATA,
+        'role_info': role_info,
+        'role_key': selected_key
+    }
+    try:
+        return render_template('login.html', **context)
+    except TemplateNotFound:
+        return _send_template_fallback('login.html')
+
+
+@app.route('/')
+def index():
+    """Serve landing page."""
+    try:
+        return render_template('index.html', roles=ROLE_METADATA)
+    except TemplateNotFound:
+        return _send_template_fallback('index.html')
+
+
+@app.route('/login')
+def login_page():
+    """Serve login page."""
+    return _render_login(DEFAULT_ROLE_KEY)
+
+
+@app.route('/login/<role_key>')
+def login_page_role(role_key):
+    """Serve login page for a specific role."""
+    return _render_login(role_key)
+
+
+@app.route('/dashboard')
+def dashboard():
+    """Serve admin dashboard."""
+    try:
+        return render_template('dashboard.html')
+    except TemplateNotFound:
+        return _send_template_fallback('dashboard.html')
+
+
+@app.route('/staff-dashboard')
+@app.route('/staff_dashboard')
+def staff_dashboard():
+    """Serve security logs dashboard."""
+    try:
+        return render_template('staff_dashboard.html')
+    except TemplateNotFound:
+        return _send_template_fallback('staff_dashboard.html')
+
+
+@app.route('/static/<path:filename>')
+def serve_static(filename):
+    """Serve static assets."""
+    return send_from_directory(static_dir, filename)
+
+
+@app.route('/uploads/<path:filename>')
+def serve_uploads(filename):
+    """Serve user-uploaded files."""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+
+@app.route('/health')
+def health_check():
+    """Simple readiness probe."""
+    return jsonify({
+        'status': 'healthy',
+        'timestamp': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+        'database': 'connected' if db is not None else 'file_fallback'
+    })
+
+
+@app.errorhandler(404)
+def not_found(error):
+    """JSON 404 handler."""
+    return jsonify({'error': 'Not found'}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """JSON 500 handler."""
+    return jsonify({'error': 'Internal server error'}), 500
+
 
 @app.route('/api/employees', methods=['GET'])
 @token_required

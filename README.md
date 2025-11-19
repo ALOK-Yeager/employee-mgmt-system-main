@@ -36,7 +36,11 @@ copy .env.example .env          # Windows
 # cp .env.example .env          # macOS / Linux
 ```
 
-The default values let the app run with mock data. Update the keys in `.env` later if you want live integrations (MongoDB, Groq, Cloudinary, etc.).
+Populate the placeholders in `.env` with your credentials when you are ready:
+
+- `MONGO_URI`, `MONGO_USERNAME`, `MONGO_PASSWORD` for a hosted MongoDB
+- `SECRET_KEY` (Flask session / JWT signing key)
+- `GROQ_API_KEY`, `TOGETHERAI_API_KEY`, `CLOUDINARY_*` as needed
 
 ## 5. Start the unified application
 
@@ -45,6 +49,15 @@ python unified_app.py
 ```
 
 By default the app listens on `http://localhost:5000`.
+
+### Access the app from another device on the same network
+
+1. Leave `python unified_app.py` running; it already binds to `0.0.0.0`.
+2. Find the host machine IP (for example `ipconfig` on Windows).
+3. From another laptop or phone on the same Wi-Fi, open `http://<host-ip>:5000`.
+4. Allow the Python process through any local firewall prompt the first time.
+
+For secure sharing over the internet, use the guides in `ALTERNATIVE_TUNNELING.md` (Cloudflare Tunnel) or `NGROK_SETUP.md`.
 
 ## 6. Log in with demo accounts
 
